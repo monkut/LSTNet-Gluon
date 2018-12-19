@@ -5,17 +5,18 @@ from mxnet import nd, gluon
 from mxnet.gluon import nn, rnn
 
 
-class LSTNet(gluon.Block):
+class LSTNet(gluon.Block):  # for creating a custom network Block needs to be used (since the model makes breaks/splits and is not Sequential)
     """
     LSTNet auto-regressive block
     """
     def __init__(self, num_series, conv_hid, gru_hid, skip_gru_hid, skip, ar_window):
         super(LSTNet, self).__init__()
-        kernel_size = 6
-        dropout_rate = 0.2
-        self.skip = skip
+        kernel_size = 6  # in this case looks at 6 hour data window
+        dropout_rate = 0.2  # for regularization
+        self.skip = skip  # determines the seasonality/cycles
         self.ar_window = ar_window
         with self.name_scope():
+            # define specific layers for the model
             self.conv = nn.Conv1D(conv_hid, kernel_size=kernel_size, layout='NCW', activation='relu')
             self.dropout = nn.Dropout(dropout_rate)
             self.gru = rnn.GRU(gru_hid, layout='TNC')
@@ -25,6 +26,7 @@ class LSTNet(gluon.Block):
 
     def forward(self, x):
         """
+        Defines how to proceed thorugh the defined network
         :param nd.NDArray x: input data in NTC layout (N: batch-size, T: sequence len, C: channels)
         :return: output of LSTNet in NC layout
         :rtype nd.NDArray
@@ -32,6 +34,11 @@ class LSTNet(gluon.Block):
         # Convolution
         c = self.conv(x.transpose((0, 2, 1)))  # Transpose NTC to to NCT (a.k.a NCW) before convolution
         c = self.dropout(c)
+        
+        # c is now passsed to the following both the following portions of the network
+        # - GRU
+        # AND
+        # - Skip GRU
 
         # GRU
         r = self.gru(c.transpose((2, 0, 1)))  # Transpose NCT to TNC before GRU
@@ -49,6 +56,7 @@ class LSTNet(gluon.Block):
         s = s.reshape(x.shape[0], -1)  # Now in N x (skipxC) layout
 
         # FC layer
+        # -- Combine results of GRU & Skip GRU layers, and feed to fc layer
         fc = self.fc(nd.concat(r, s))  # NC layout
 
         # Autoregressive highway
