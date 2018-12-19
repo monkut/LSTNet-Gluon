@@ -33,7 +33,7 @@ class TimeSeriesData(object):
         return data / self.scale
 
 
-class TimeSeriesDataset(gluon.data.Dataset):
+class TimeSeriesDataset(gluon.data.Dataset):  # sample how to create a Dataset in gluon
     """
     Dataset that splits the data into a dense overlapping windows
     """
@@ -46,11 +46,11 @@ class TimeSeriesDataset(gluon.data.Dataset):
         """
         super(TimeSeriesDataset, self).__init__()
         self._data = data
-        self._window = window
-        self._horizon = horizon
+        self._window = window  
+        self._horizon = horizon  # how many steps in the future to predict something
         self._transform = transform
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx):  # gets all items in the window with labels
         """
         :param int idx: index of the item
         :return: single item in 'TC' layout
