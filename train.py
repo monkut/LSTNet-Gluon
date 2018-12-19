@@ -31,6 +31,10 @@ def train(file_path, out_path):
 
     batch_size = 128
     train_data_loader = gluon.data.DataLoader(
+        # currently this implentation results in spiky training
+        # refer to: 
+        # https://github.com/ThomasDelteil/PerformanceTricksMXNetGluon
+        # -- in this case num_workers may be adjusted for smoother training
         ts_data.train, batch_size=batch_size, shuffle=True, num_workers=16, last_batch='discard')
 
     scale = nd.array(ts_data.scale, ctx=ctx)
