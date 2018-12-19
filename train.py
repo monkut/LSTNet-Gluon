@@ -1,3 +1,6 @@
+
+# multi-gpu implementation
+# https://github.com/cyrusmvahid/LSTNet-Gluon/blob/master/train.py
 from __future__ import print_function
 
 import argparse
